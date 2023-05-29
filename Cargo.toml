@@ -1,0 +1,18 @@
+[package]
+name = "nxcli"
+version = "0.1.0"
+edition = "2021"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
+base64 = "0.21.2"
+confy = "0.5.1"
+derive_builder = { version = "0.12.0", features = ["clippy"] }
+futures = "0.3.28"
+ical = { version = "0.8.0", features = ["generator"] }
+reqwest = { version = "0.11.18", features = ["json", "gzip", "blocking"] }
+serde = { version = "1.0.163", features = ["derive"] }
+strfmt = "0.2.4"
+tokio = "1.28.2"
+xml-rs = "0.8.13"
