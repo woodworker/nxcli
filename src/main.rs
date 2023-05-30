@@ -1,10 +1,8 @@
 const APP_NAME: &str = "nxcli";
 
-use self::apps::calendar::get_calendar_list;
 use crate::api::ApiClient;
-use crate::apps::todo::get_todos;
 use reqwest::header::USER_AGENT;
-use reqwest::{Method, StatusCode};
+use reqwest::StatusCode;
 use serde::{Deserialize, Serialize};
 use std::io::Write;
 use std::{thread, time::Duration};
@@ -59,14 +57,44 @@ fn main() {
         let api = ApiClient::create(config);
         let rt = tokio::runtime::Runtime::new().unwrap();
 
-        let calendars = rt.block_on(get_calendar_list(&api));
-        for cal in calendars {
-            if let Some(todos) = rt.block_on(get_todos(&api, &cal)) {
-                dbg!(todos);
-                break;
+        // let calendars = rt.block_on(get_calendar_list(&api));
+        // for cal in calendars {
+        //     if let Some(todos) = rt.block_on(get_todos(&api, &cal)) {
+        //         dbg!(todos);
+        //         break;
+        //     }
+        // }
+        // dbg!(calendars);
+
+        // https://nextcloud-bookmarks.readthedocs.io/en/latest/bookmark.html#query-bookmarks
+        let url_str = api.build_url("/index.php/apps/bookmarks/public/rest/v2/bookmark");
+
+        #[allow(clippy::vec_init_then_push)]
+        let mut query_params: Vec<(&str, &str)> = Vec::new();
+
+        // all the query parameter
+        query_params.push(("sortby", "lastmodified"));
+        query_params.push(("untagged", "1"));
+        query_params.push(("limit", "3"));
+        query_params.push(("page", "1"));
+
+        let request = api
+            .get_client()
+            .get(url_str)
+            .query(&query_params)
+            .header(
+                reqwest::header::CONTENT_TYPE,
+                "application/json; charset=utf-8",
+            )
+            .send();
+
+        let response = rt.block_on(request);
+        if let Ok(bookmarks) = response {
+            let json = rt.block_on(bookmarks.text());
+            if let Ok(text) = json {
+                dbg!(text);
             }
         }
-        // dbg!(calendars);
     }
 
     println!("Hello, world!");
